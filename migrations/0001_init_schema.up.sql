@@ -10,7 +10,7 @@ CREATE TABLE entries (
     user_id CHAR(36) NOT NULL,
     title TEXT NOT NULL,
     content TEXT NOT NULL,
-    entry_date TIMESTAMP,
+    entry_date DATE,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 

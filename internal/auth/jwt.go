@@ -7,13 +7,12 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// TODO: change the param to id and bake the id into the token instead of username
-func CreateToken(username, secret string) (string, string, error) {
+func CreateToken(userId, secret string) (string, string, error) {
 	expiryTime := time.Now().Add(time.Hour * 24)
 	claims := jwt.MapClaims{
-		"username": username,
-		"exp":      expiryTime.Unix(),
-		"iat":      time.Now().Unix(),
+		"userId": userId,
+		"exp":    expiryTime.Unix(),
+		"iat":    time.Now().Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -28,7 +27,6 @@ func CreateToken(username, secret string) (string, string, error) {
 	return tokenString, expiryString, nil
 }
 
-// TODO: update to returning id instead of username
 func ValidateToken(tokenString string, secret string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
@@ -39,11 +37,11 @@ func ValidateToken(tokenString string, secret string) (string, error) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		username, _ := claims["username"].(string)
-		if username == "" {
+		userId, _ := claims["userId"].(string)
+		if userId == "" {
 			return "", errors.New("token is missing required claims")
 		}
-		return username, nil
+		return userId, nil
 	}
 
 	return "", errors.New("invalid token")

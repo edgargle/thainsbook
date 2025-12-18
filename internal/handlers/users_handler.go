@@ -23,10 +23,15 @@ func (a *Application) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newId := uuid.NewString()
 	hashedPassword, err := auth.HashPassword(u.Password)
 
-	err = a.Users.AddUser(newId, u.Username, hashedPassword)
+	newUser := models.UserDto{
+		Uid:            uuid.NewString(),
+		Username:       u.Username,
+		HashedPassword: hashedPassword,
+	}
+
+	err = a.Users.AddUser(&newUser)
 	if err != nil {
 		log.Println("Unable to register new user:", err)
 		utils.WriteError(w, http.StatusInternalServerError, "Unable to register new user: "+u.Username)
@@ -49,22 +54,27 @@ func (a *Application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	retrievedPassword, err := a.Users.GetUserPassword(u.Username)
 	if err != nil {
-		log.Println("Invalid Credentials.")
+		log.Println(err.Error())
 		utils.WriteError(w, http.StatusUnauthorized, "Invalid Credentials.")
 		return
 	}
 	passwordHashCheck := auth.CheckPasswordHash(u.Password, retrievedPassword)
 	if !passwordHashCheck {
-		log.Println("Invalid Credentials.")
 		utils.WriteError(w, http.StatusUnauthorized, "Invalid Credentials.")
+		return
+	}
+	userId, err := a.Users.GetUserId(u.Username)
+	if err != nil {
+		log.Println(err.Error())
+		utils.WriteError(w, http.StatusInternalServerError, "Error fetching credentials.")
 		return
 	}
 
 	log.Println("Generating auth token...")
 
-	tokenString, expiry, err := auth.CreateToken(u.Username, a.JWT)
+	tokenString, expiry, err := auth.CreateToken(userId, a.JWT)
 	if err != nil {
-		log.Println("Server Error.")
+		log.Println(err.Error())
 		utils.WriteError(w, http.StatusInternalServerError, "Server Error.")
 		return
 	}

@@ -10,7 +10,7 @@ import (
 
 type contextKey string
 
-const UsernameKey contextKey = "username"
+const UserIdKey contextKey = "userId"
 
 func (a *Application) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -28,13 +28,13 @@ func (a *Application) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 
 		tokenString := parts[1]
 
-		username, err := auth.ValidateToken(tokenString, a.JWT)
+		userId, err := auth.ValidateToken(tokenString, a.JWT)
 		if err != nil {
 			HandleUnauthorized(w, r)
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), UsernameKey, username)
+		ctx := context.WithValue(r.Context(), UserIdKey, userId)
 
 		next(w, r.WithContext(ctx))
 	}

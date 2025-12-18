@@ -7,11 +7,10 @@ import (
 	"log"
 )
 
-type User struct {
-	Uid            string `json:"uid"`
-	Username       string `json:"username"`
-	HashedPassword string `json:"hashed_password"`
-	DateJoined     string `json:"date_joined"`
+type UserDto struct {
+	Uid            string
+	Username       string
+	HashedPassword string
 }
 
 type UserRequest struct {
@@ -23,18 +22,18 @@ type UserModel struct {
 	DB *sql.DB
 }
 
-func (u *UserModel) GetUser(username string) (User, error) {
-	var user User
+func (u *UserModel) GetUserId(username string) (string, error) {
+	var userId string
 
-	row := u.DB.QueryRow("SELECT id, username, password_hash, created_at FROM users WHERE username = ?", username)
-	if err := row.Scan(&user.Uid, &user.Username, &user.HashedPassword, &user.DateJoined); err != nil {
+	row := u.DB.QueryRow("SELECT id FROM users WHERE username = ?", username)
+	if err := row.Scan(&userId); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return user, fmt.Errorf("user not found")
+			return "", fmt.Errorf("user not found")
 		}
-		return user, fmt.Errorf("Error in fetching user: %s", err)
+		return "", fmt.Errorf("Error in fetching user: %s", err)
 	}
 
-	return user, nil
+	return userId, nil
 }
 
 func (u *UserModel) GetUserPassword(username string) (string, error) {
@@ -51,8 +50,8 @@ func (u *UserModel) GetUserPassword(username string) (string, error) {
 	return hashedPassword, nil
 }
 
-func (u *UserModel) AddUser(uid string, username string, hashedPassword string) error {
-	res, err := u.DB.Exec("INSERT INTO users (id, username, password_hash) VALUES (?, ?, ?)", uid, username, hashedPassword)
+func (u *UserModel) AddUser(user *UserDto) error {
+	res, err := u.DB.Exec("INSERT INTO users (id, username, password_hash) VALUES (?, ?, ?)", user.Uid, user.Username, user.HashedPassword)
 	if err != nil {
 		return fmt.Errorf("Error in adding user: %s", err)
 	}
@@ -60,6 +59,6 @@ func (u *UserModel) AddUser(uid string, username string, hashedPassword string) 
 	if err != nil {
 		return fmt.Errorf("Error in adding user: %s", err)
 	}
-	log.Printf("User added: %s", username)
+	log.Printf("User added: %s", user.Username)
 	return nil
 }

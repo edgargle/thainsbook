@@ -12,11 +12,11 @@ import (
 
 func (a *Application) HandleGetUserEntries(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	// fetch id instead of username once updated
-	username := ctx.Value(UsernameKey).(string)
+	userId := ctx.Value(UserIdKey).(string)
 
-	entries, err := a.Entries.GetEntriesByUser(username)
+	entries, err := a.Entries.GetEntriesByUser(userId)
 	if err != nil {
+		log.Printf("Error getting entries by user: %v", err)
 		utils.WriteError(w, http.StatusInternalServerError, "Error in retrieving entries.")
 		return
 	}
@@ -34,6 +34,8 @@ func (a *Application) HandleGetUserEntries(w http.ResponseWriter, r *http.Reques
 }
 
 func (a *Application) HandleCreateEntry(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	userId := ctx.Value(UserIdKey).(string)
 	decoder := json.NewDecoder(r.Body)
 	var e models.EntryRequest
 	decoder.DisallowUnknownFields()
@@ -54,18 +56,18 @@ func (a *Application) HandleCreateEntry(w http.ResponseWriter, r *http.Request) 
 		log.Println("Error Parsing EntryDate:", err)
 		utils.WriteError(w, http.StatusInternalServerError, "Unable to process request.")
 	}
-	log.Println("EntryDate Processed")
 
-	newEntry := models.Entry{
-		Uid:       uuid.NewString(),
+	newEntry := models.EntryDto{
+		Id:        uuid.NewString(),
 		Title:     e.Title,
 		Content:   e.Content,
 		EntryDate: time,
+		UserId:    userId,
 	}
 
 	err = a.Entries.AddEntry(&newEntry)
 	if err != nil {
-		log.Println("Error Adding Entry:", err)
+		log.Println("Error Adding EntryDto:", err)
 		utils.WriteError(w, http.StatusInternalServerError, "Unable to process request.")
 		return
 	}

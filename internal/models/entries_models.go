@@ -4,18 +4,19 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"time"
 )
 
-type Entry struct {
-	Uid       string    `json:"uid"`
-	Title     string    `json:"title"`
-	Content   string    `json:"content"`
-	EntryDate time.Time `json:"entry_date"`
+// TODO: Implement sequential ID for entries so that user can easily identify which for update and deletion
+type EntryDto struct {
+	Id        string
+	Title     string
+	Content   string
+	EntryDate string
+	UserId    string
 }
 
 type EntryRequest struct {
-	Uid       string `json:"uid"`
+	Id        string `json:"Id"`
 	Title     string `json:"title"`
 	Content   string `json:"content"`
 	EntryDate string `json:"entry_date"`
@@ -33,8 +34,8 @@ type EntryModel struct {
 	DB *sql.DB
 }
 
-func (m *EntryModel) AddEntry(entry *Entry) error {
-	res, err := m.DB.Exec("INSERT INTO entries (id, title, content, entry_date) VALUES (?, ?, ?, ?)", entry.Uid, entry.Title, entry.Content, entry.EntryDate)
+func (m *EntryModel) AddEntry(entry *EntryDto) error {
+	res, err := m.DB.Exec("INSERT INTO entries (id, user_id, title, content, entry_date) VALUES (?, ?, ?, ?, ?)", entry.Id, entry.UserId, entry.Title, entry.Content, entry.EntryDate)
 	if err != nil {
 		return fmt.Errorf("Error inserting entry: %s", err)
 	}
@@ -46,10 +47,10 @@ func (m *EntryModel) AddEntry(entry *Entry) error {
 	return nil
 }
 
-func (m *EntryModel) GetEntriesByUser(username string) ([]EntryResponse, error) {
+func (m *EntryModel) GetEntriesByUser(userId string) ([]EntryResponse, error) {
 	var entries []EntryResponse
 
-	rows, err := m.DB.Query("SELECT entries.title, entries.content FROM entries JOIN users ON entries.user_id = users.id WHERE users.username = ?", username)
+	rows, err := m.DB.Query("SELECT entries.title, entries.content, entries.entry_date, entries.updated_at, entries.created_at FROM entries JOIN users ON entries.user_id = users.id WHERE users.id = ?", userId)
 	if err != nil {
 		log.Println(err)
 		return nil, fmt.Errorf("Unable to fetch entries")
@@ -58,7 +59,8 @@ func (m *EntryModel) GetEntriesByUser(username string) ([]EntryResponse, error) 
 
 	for rows.Next() {
 		var entry EntryResponse
-		if err := rows.Scan(&entry.Title, &entry.Content, &entry.EntryDate, &entry.CreatedAt, &entry.UpdatedAt); err != nil {
+		if err := rows.Scan(&entry.Title, &entry.Content, &entry.EntryDate, &entry.UpdatedAt, &entry.CreatedAt); err != nil {
+			log.Println(err)
 			return nil, fmt.Errorf("Unable to fetch entries")
 		}
 		entries = append(entries, entry)
