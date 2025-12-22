@@ -7,6 +7,7 @@ CREATE TABLE users (
 
 CREATE TABLE entries (
     id CHAR(36) PRIMARY KEY,
+    seq_id INT NOT NULL,
     user_id CHAR(36) NOT NULL,
     title TEXT NOT NULL,
     content TEXT NOT NULL,

@@ -46,6 +46,7 @@ func main() {
 
 	// Entries Endpoints, specific to user, need to authenticate
 	r.HandleFunc("GET "+prefix+"/entries", app.Authenticate(app.HandleGetUserEntries))
+	r.HandleFunc("GET "+prefix+"/entries/{id}", app.Authenticate(app.HandleGetUserEntry))
 	r.HandleFunc("POST "+prefix+"/entries", app.Authenticate(app.HandleCreateEntry))
 	r.HandleFunc("PATCH "+prefix+"/entries/{id}", app.Authenticate(app.HandleUpdateEntry))
 	r.HandleFunc("DELETE "+prefix+"/entries/{id}", app.Authenticate(app.HandleDeleteEntry))
@@ -55,5 +56,5 @@ func main() {
 
 	// Start Server
 	log.Printf("Server starting on port %s", port)
-	log.Fatal(http.ListenAndServe(":"+port, r))
+	log.Fatal(http.ListenAndServe(":"+port, handlers.Logger(r)))
 }

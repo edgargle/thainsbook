@@ -34,4 +34,6 @@ go.work.sum
 
 # Air - Live Reloading
 tmp/
-build-errors.log 
+build-errors.log
+
+.DS_STORE
