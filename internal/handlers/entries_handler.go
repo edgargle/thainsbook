@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// TODO: implement filtering and bulk delete
 func (a *Application) HandleGetUserEntries(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	userId := ctx.Value(UserIdKey).(string)

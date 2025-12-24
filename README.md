@@ -5,18 +5,31 @@
 Just as the Thain's Book is the treasured historical record in the Shire, thainsbook is the treasured record of your life. It is my headless Go API for any and all journaling needs. Write your stories here! 
 
 Disclaimer: This is just a fun side project, no data is being harvested or collected. You may choose to use my project to store your data at your own discretion. 
-## Usage
+
+## Contents 
+
+*   [Getting Started](#getting-started)
+*   [Planned Changes](#planned-changes)
+*   [Installation](#installation)
+*   [Contributing](#contributing)
+
+
+## Getting Started
 [https://thainsbook.onrender.com](https://thainsbook.onrender.com)
 
 This is a headless API, so you can use your method of choice (i.e. Postman, cURL). Please find the API guide below. Simply register your username and password and get started!
 
 ### Endpoints
 
+#### User Endpoints
+
 <code> POST api/v1/users/register </code>
 * Send a JSON body with <code>"username"</code> and <code>"password"</code> to register
 
 <code> POST api/v1/users/login </code>
 * Send a JSON body with your <code>"username"</code> and <code>"password"</code> that you registered with, and get back a JWT Auth Token.
+
+#### Entry Endpoints
 
 <code> POST api/v1/entries </code>
 * Use your JWT Token and upload a journal entry
@@ -36,9 +49,27 @@ This is a headless API, so you can use your method of choice (i.e. Postman, cURL
 <code> PATCH api/v1/entries/{id} </code>
 * Use your JWT Token to update any specific entry
 * You may update any or all of the fields: <code>"title"</code>, <code>"content"</code> and <code>"entry_date"</code>
+* I suggest using this to just correct mistakes in your content or updating the title, as you would have to copy & paste everything back if you want to add more to your content/title. You should add a new entry for the same date if you want to write and add more.
 
 <code> DELETE api/v1/entries/{id} </code>
 * Use your JWT Token to delete any specific entry
+* Currently this is a hard delete, so be careful using this. Soft delete and undo delete feature will be added soon.
+
+## Planned Changes
+
+I have some updates planned in the future. I'll keep them here for information and reminders. 
+
+* Text search functionality, on both title and content
+* Filtering by dates
+* Mood input (Being able to assign a mood, i.e. happy, sad, angry, to each journal entry)
+* Import and Bulk Import function (from csv or txt files)
+* Bulk Delete
+* Adding uploading of media functionality
+* Successfully added entries will return ID of newly added entry
+* Adding soft delete and undo functionality
+* OAuth functionality
+* Add sorting to the GET entries endpoint
+
 
 ## Installation
 
