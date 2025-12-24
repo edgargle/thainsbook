@@ -15,9 +15,15 @@ func ConnectDB() (*sql.DB, error) {
 	cfg.User = os.Getenv("DB_USERNAME")
 	cfg.Passwd = os.Getenv("DB_PASSWORD")
 	cfg.Net = "tcp"
-	cfg.Addr = os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT")
+
+	if os.Getenv("ENV") == "PROD" {
+		cfg.Addr = os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT")
+		cfg.TLSConfig = "true"
+	} else if os.Getenv("ENV") == "DEV" {
+		cfg.Addr = os.Getenv("DB_HOST")
+	}
+
 	cfg.DBName = os.Getenv("DB_DATABASE")
-	cfg.TLSConfig = "true"
 
 	log.Println("Connecting to DB...")
 	var err error

@@ -39,15 +39,18 @@ func main() {
 	// Initialize Server
 	r := http.NewServeMux()
 
+	// Welcome Endpoint
+	r.HandleFunc("GET /", handleWelcome)
+
 	// E.g. endpoint: /api/v1/entries
 	// User Endpoints
 	r.HandleFunc("POST "+prefix+"/users/register", app.HandleRegister)
 	r.HandleFunc("POST "+prefix+"/users/login", app.HandleLogin)
 
 	// Entries Endpoints, specific to user, need to authenticate
+	r.HandleFunc("POST "+prefix+"/entries", app.Authenticate(app.HandleCreateEntry))
 	r.HandleFunc("GET "+prefix+"/entries", app.Authenticate(app.HandleGetUserEntries))
 	r.HandleFunc("GET "+prefix+"/entries/{id}", app.Authenticate(app.HandleGetUserEntry))
-	r.HandleFunc("POST "+prefix+"/entries", app.Authenticate(app.HandleCreateEntry))
 	r.HandleFunc("PATCH "+prefix+"/entries/{id}", app.Authenticate(app.HandleUpdateEntry))
 	r.HandleFunc("DELETE "+prefix+"/entries/{id}", app.Authenticate(app.HandleDeleteEntry))
 
@@ -57,4 +60,8 @@ func main() {
 	// Start Server
 	log.Printf("Server starting on port %s", port)
 	log.Fatal(http.ListenAndServe(":"+port, handlers.Logger(r)))
+}
+
+func handleWelcome(w http.ResponseWriter, r *http.Request) {
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"message": "Welcome to thainsbook! To get started, send a POST request to https://thainsbook.onrender.com/api/v1/users/register with a \"username\" and \"password\" to register."})
 }
