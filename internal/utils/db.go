@@ -12,11 +12,12 @@ func ConnectDB() (*sql.DB, error) {
 	var db *sql.DB
 
 	cfg := mysql.NewConfig()
-	cfg.User = os.Getenv("MYSQL_USER")
-	cfg.Passwd = os.Getenv("MYSQL_PASSWORD")
+	cfg.User = os.Getenv("DB_USERNAME")
+	cfg.Passwd = os.Getenv("DB_PASSWORD")
 	cfg.Net = "tcp"
-	cfg.Addr = "localhost"
-	cfg.DBName = os.Getenv("MYSQL_DATABASE")
+	cfg.Addr = os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT")
+	cfg.DBName = os.Getenv("DB_DATABASE")
+	cfg.TLSConfig = "true"
 
 	log.Println("Connecting to DB...")
 	var err error
