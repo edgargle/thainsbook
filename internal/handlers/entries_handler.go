@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"fmt"
 	"thainsbook/internal/models"
 	"thainsbook/internal/utils"
 
@@ -84,14 +85,14 @@ func (a *Application) HandleCreateEntry(w http.ResponseWriter, r *http.Request) 
 		UserId:    userId,
 	}
 
-	err = a.Entries.AddEntry(&newEntry)
+	id, err := a.Entries.AddEntry(&newEntry)
 	if err != nil {
 		log.Println("Error Adding EntryDto:", err)
 		utils.WriteError(w, http.StatusInternalServerError, "Unable to process request.")
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, map[string]string{"message": "New entry created successfully."})
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"message": "New entry created successfully.", "entry":fmt.Sprintf("%d", id)})
 }
 
 func (a *Application) HandleUpdateEntry(w http.ResponseWriter, r *http.Request) {

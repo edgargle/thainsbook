@@ -38,17 +38,20 @@ type EntryModel struct {
 	DB *sql.DB
 }
 
-func (m *EntryModel) AddEntry(entry *EntryDto) error {
-	res, err := m.DB.Exec("INSERT INTO entries (id, seq_id, user_id, title, content, entry_date) VALUES (?, (SELECT COALESCE(MAX(seq_id), 0) + 1 FROM entries AS temp WHERE user_id = ?), ?, ?, ?, ?)", entry.Id, entry.UserId, entry.UserId, entry.Title, entry.Content, entry.EntryDate)
+func (m *EntryModel) AddEntry(entry *EntryDto) (int, error) {
+	_, err := m.DB.Exec("INSERT INTO entries (id, seq_id, user_id, title, content, entry_date) VALUES (?, (SELECT COALESCE(MAX(seq_id), 0) + 1 FROM entries AS temp WHERE user_id = ?), ?, ?, ?, ?)", entry.Id, entry.UserId, entry.UserId, entry.Title, entry.Content, entry.EntryDate)
 	if err != nil {
-		return fmt.Errorf("Error inserting entry: %s", err)
+		return -1, fmt.Errorf("Error inserting entry: %s", err)
 	}
-	id, err := res.LastInsertId()
+
+	var newId int
+	err = m.DB.QueryRow("SELECT seq_id FROM entries WHERE id = ? ORDER BY id DESC LIMIT 1", entry.Id).Scan(&newId)
 	if err != nil {
-		log.Printf("Error inserting entry: %s", err)
-		return fmt.Errorf("Error inserting entry: %v", id)
+		log.Printf("Error fetching new entry ID: %s", err)
+		return -1, fmt.Errorf("Error fetching new entry ID: %v", &entry.Id)
 	}
-	return nil
+
+	return newId, nil
 }
 
 func (m *EntryModel) GetEntry(id string, userId string) (*EntryResponse, error) {
@@ -60,7 +63,7 @@ func (m *EntryModel) GetEntry(id string, userId string) (*EntryResponse, error) 
 			log.Println("No entry found")
 			return nil, fmt.Errorf("ID %v: no such entry", id)
 		}
-		return nil, fmt.Errorf("ID %d: %v", id, err)
+		return nil, fmt.Errorf("ID %s: %v", id, err)
 	}
 	return &entry, nil
 }
@@ -68,7 +71,7 @@ func (m *EntryModel) GetEntry(id string, userId string) (*EntryResponse, error) 
 func (m *EntryModel) GetEntriesByUser(userId string) ([]EntryResponse, error) {
 	var entries []EntryResponse
 
-	rows, err := m.DB.Query("SELECT entries.seq_id, entries.title, entries.content, entries.entry_date, entries.updated_at, entries.created_at FROM entries WHERE entries.user_id = ?", userId)
+	rows, err := m.DB.Query("SELECT entries.seq_id, entries.title, entries.content, entries.entry_date, entries.updated_at, entries.created_at FROM entries WHERE entries.user_id = ? ORDER BY seq_id DESC", userId)
 	if err != nil {
 		log.Println(err)
 		return nil, fmt.Errorf("Unable to fetch entries")
